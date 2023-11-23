@@ -1,0 +1,72 @@
+code:
+query = "Having the following text in consideration, return me a list of keywords that could represent it." \
+"At the end of the microcredential students should reveal knowledge, skills and competences capable of solving real problems. The microcredential is aimed at students and trainees who are looking for knowledge in the area of metrology of functional parts or associated with the component manufacturing process.\
+3D metrology" \
+"GD & T tolerance Coordinate measuring systems Calibration Measurement errors Propagation of errors Normalization Reading project Measurement plan Post-processing of functional parts CNC machines Automatic tool calibration systems Centering systems Positioning systems Dimensional control systems Geometric control systems Finishing techniques for CNC machining  Effective 3D metrology techniques Fundamentals of 3D measurement Control systems Contact measuring systems Non-contact measuring systems Coordinate measuring machines Preparation of measuring systems Alignment methods Parts measurement techniques CMM operation and programming Treatment of results" \
+"At the end of the course students should reveal knowledge, skills and competences capable of solving real problems, showing themselves capable of:Know, master and apply the concepts of tolerance GD & T in the design and manufacture of parts.2. Know and master the principles of tolerance GD & T and know how to apply them in the finishing of functional parts3. Know and master the principles of tolerance GD & T and know how to apply them in 3D measurement of functional parts using coordinate measuring machines. Creatively communicate a solution proposal.Know and master the principles of 3D measurement of functional parts using non- contact techniques."
+
+print(bard.get_answer(query)['content'])
+print(bard.get_answer("Do you remember what I just asked you? What was the question about?")['content'])
+print(bard.get_answer("From the following list of competences, remove the ones that you think that don't fit, having in mind the initial text that I sent you:" \
+"manage periodic calibration plans write calibration report log transmitter readings interpret geometric dimensions and tolerances metrology measure parts of manufactured products adjust measuring machines revise quality control systems documentation maintain additive manufacturing systems operate precision measuring equipment program a CNC controller functionalities of machinery power plant instrumentation calibrate waste incinerator use measurement instruments operate paper bag machine control panel components manage railway construction projects tend CNC laser cutting machine calibrate electronic instruments")['content'])
+
+
+Sure, here is a list of keywords that could represent the given text:
+
+* **3D metrology**
+* **GD&T tolerance**
+* **Coordinate measuring systems (CMMs)**
+* **Calibration**
+* **Measurement errors**
+* **Propagation of errors**
+* **Normalization**
+* **Reading project**
+* **Measurement plan**
+* **Post-processing of functional parts**
+* **CNC machines**
+* **Automatic tool calibration systems**
+* **Centering systems**
+* **Positioning systems**
+* **Dimensional control systems**
+* **Geometric control systems**
+* **Finishing techniques for CNC machining**
+* **Effective 3D metrology techniques**
+* **Fundamentals of 3D measurement**
+* **Control systems**
+* **Contact measuring systems**
+* **Non-contact measuring systems**
+* **Part measurement techniques**
+* **CMM operation and programming**
+* **Treatment of results**
+* **Problem-solving**
+* **Design for manufacturability (DFM)**
+* **Quality control**
+* **Industrial applications**
+Yes, I do remember. You asked me to identify a list of keywords that could represent the given text about a microcredential in the area of metrology of functional parts. I provided you with a list of keywords that accurately reflect the key concepts and topics covered in the text.
+Sure, here is the list of competences from the original list that are relevant to the microcredential in the area of metrology of functional parts:
+
+* Manage periodic calibration plans
+* Write calibration report
+* Log transmitter readings
+* Interpret geometric dimensions and tolerances
+* Metrology
+* Measure parts of manufactured products
+* Adjust measuring machines
+* Revise quality control systems documentation
+* Operate precision measuring equipment
+* Program a CNC controller
+* Use measurement instruments
+
+The following competences are not relevant to the microcredential and should be removed from the list:
+
+* Functionalities of machinery
+* Power plant instrumentation
+* Calibrate waste incinerator
+* Operate paper bag machine control panel components
+* Manage railway construction projects
+* Tend CNC laser cutting machine
+* Calibrate electronic instruments
+
+These competences are either too broad or not specific enough to the area of metrology of functional parts. For example, "functionalities of machinery" is a very broad term that could encompass a wide range of skills and knowledge that are not relevant to the microcredential. Similarly, "calibrate electronic instruments" is a specific skill that is not relevant to the microcredential, as it is focused on calibrating electronic equipment rather than measuring functional parts.
+
+I hope this is helpful!
