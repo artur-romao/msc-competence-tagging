@@ -1,9 +1,4 @@
-from pycookiecheat import chrome_cookies
-from bardapi import BardCookies
-
-bard_cookies = chrome_cookies("https://bard.google.com/")
-cookies = {'__Secure-1PSID': bard_cookies['__Secure-1PSID'], '__Secure-1PSIDTS': bard_cookies['__Secure-1PSIDTS']}
-bard = BardCookies(cookie_dict=cookies, token_from_browser=True)
+from config import bard
 
 #print(bard.get_answer("What is the capital of France?")['content'])
 #print(bard.get_answer("the length of a rectangle is twice its width. Given the length of the diagonal is 5(sqrt(5)), find the area of the rectangle. - a. 2500, b. 2, c. 50, d. 25")['content'])
