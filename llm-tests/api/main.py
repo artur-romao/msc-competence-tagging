@@ -3,9 +3,20 @@ from fastapi.middleware.cors import CORSMiddleware
 import pandas as pd
 import redis
 import requests
+from contextlib import asynccontextmanager
 from config import ESCO_API_ENDPOINT, ESCO_API_LANG, FLOWISE_MATCHER_API_URL, FLOWISE_SHORTER_API_URL, TAGGING_UI_URL
+from database import engine, database
+from models import metadata
 
-app = FastAPI()
+metadata.create_all(bind=engine)
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await database.connect()
+    yield
+    await database.disconnect()
+
+
+app = FastAPI(lifespan=lifespan)
 
 # Setup this later
 

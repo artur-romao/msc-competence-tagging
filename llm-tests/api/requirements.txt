@@ -8,4 +8,9 @@ bs4
 openpyxl
 fastapi
 uvicorn[standard]
+sqlalchemy
+databases
+psycopg2-binary
+alembic
+asyncpg
 redis==4.3.5

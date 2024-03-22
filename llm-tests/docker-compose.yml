@@ -7,12 +7,26 @@ services:
       - ./api:/app
     ports:
       - "8000:8000"
+    env_file:
+      - .env
     environment:
       - MODULE_NAME=main
       - VARIABLE_NAME=app
       - DATABASE_URL=redis://default:password@db:6379/0
     depends_on:
       - db
+      - tagging-db
+  tagging-db:
+    image: postgres:latest
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_DB: ${TAGGING_POSTGRES_DB}
+      POSTGRES_USER: ${TAGGING_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${TAGGING_POSTGRES_PASSWORD}
+    volumes:
+      - tagging_postgres_data:/var/lib/postgresql/data
+    restart: always
   db:
     image: redis:latest
     ports:
@@ -29,12 +43,16 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8080:8080"
-  postgres_db:
+  flowise_postgres_db:
     image: postgres:latest
     ports:
       - "5432:5432"
+    environment:
+      POSTGRES_DB: ${DATABASE_HOST}
+      POSTGRES_USER: ${DATABASE_USER}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - flowise_postgres_data:/var/lib/postgresql/data
     restart: always
   flowise:
         image: flowiseai/flowise
@@ -81,4 +99,5 @@ services:
     depends_on:
       - web
 volumes:
-  postgres_data:
+  tagging_postgres_data:
+  flowise_postgres_data:
