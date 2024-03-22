@@ -1,3 +1,0 @@
-bardapi
-python-dotenv
-pycookiecheat

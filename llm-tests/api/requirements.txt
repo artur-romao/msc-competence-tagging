@@ -1,0 +1,11 @@
+bardapi
+python-gemini-api
+aiohttp
+pycookiecheat
+pandas
+nltk
+bs4
+openpyxl
+fastapi
+uvicorn[standard]
+redis==4.3.5

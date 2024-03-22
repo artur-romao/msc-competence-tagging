@@ -7,7 +7,7 @@ import json
 import requests
 from config import FIELDS_TO_EXTRACT, bard, COURSE_DIRECTOR_PROMPT
 
-file = "DPUCS.xlsx"
+file = "data/DPUCS.xlsx"
 df = pd.read_excel(file)
 
 column_names = df.columns.tolist()

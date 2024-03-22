@@ -1,0 +1,84 @@
+version: '3.8'
+services:
+  web:
+    build: ./api
+    command: uvicorn main:app --host 0.0.0.0 --reload
+    volumes:
+      - ./api:/app
+    ports:
+      - "8000:8000"
+    environment:
+      - MODULE_NAME=main
+      - VARIABLE_NAME=app
+      - DATABASE_URL=redis://default:password@db:6379/0
+    depends_on:
+      - db
+  db:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    restart: always
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+  esco_api:
+    build:
+      context: ./ESCO_Local_API_v1.1.1
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+  postgres_db:
+    image: postgres:latest
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: always
+  flowise:
+        image: flowiseai/flowise
+        restart: always
+        environment:
+            - PORT=${PORT}
+            - CORS_ORIGINS=${CORS_ORIGINS}
+            - IFRAME_ORIGINS=${IFRAME_ORIGINS}
+            - FLOWISE_USERNAME=${FLOWISE_USERNAME}
+            - FLOWISE_PASSWORD=${FLOWISE_PASSWORD}
+            - FLOWISE_FILE_SIZE_LIMIT=${FLOWISE_FILE_SIZE_LIMIT}
+            - DEBUG=${DEBUG}
+            - DATABASE_PATH=${DATABASE_PATH}
+            - DATABASE_TYPE=${DATABASE_TYPE}
+            - DATABASE_PORT=${DATABASE_PORT}
+            - DATABASE_HOST=${DATABASE_HOST}
+            - DATABASE_NAME=${DATABASE_NAME}
+            - DATABASE_USER=${DATABASE_USER}
+            - DATABASE_PASSWORD=${DATABASE_PASSWORD}
+            - DATABASE_SSL=${DATABASE_SSL}
+            - DATABASE_SSL_KEY_BASE64=${DATABASE_SSL_KEY_BASE64}
+            - APIKEY_PATH=${APIKEY_PATH}
+            - SECRETKEY_PATH=${SECRETKEY_PATH}
+            - FLOWISE_SECRETKEY_OVERWRITE=${FLOWISE_SECRETKEY_OVERWRITE}
+            - LOG_LEVEL=${LOG_LEVEL}
+            - LOG_PATH=${LOG_PATH}
+            - BLOB_STORAGE_PATH=${BLOB_STORAGE_PATH}
+            - DISABLE_FLOWISE_TELEMETRY=${DISABLE_FLOWISE_TELEMETRY}
+        ports:
+            - '${PORT}:${PORT}'
+        volumes:
+            - ~/.flowise:/root/.flowise
+        command: /bin/sh -c "sleep 3; flowise start"
+  tagging-ui:
+    build: ./tagging-ui
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./tagging-ui:/app
+      - /app/node_modules
+    environment:
+      - REACT_APP_API_URL=http://localhost:8000
+    command: yarn start
+    depends_on:
+      - web
+volumes:
+  postgres_data:

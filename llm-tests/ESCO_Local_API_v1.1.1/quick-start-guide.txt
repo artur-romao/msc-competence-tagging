@@ -1,0 +1,23 @@
+Prerequisite
+	Java 8 needs to be installed.
+	You can download Java 8 here: http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html
+
+
+Start application in Windows:
+-Go to the folder tomcat-esp-api-v03.94/bin
+-Doubleclick on startup.bat
+
+
+Start application in Linux:
+-Run the following commands in a terminal
+	cd tomcat-esp-api-v03.94/bin
+	chmod 755 *.sh
+	./startup.sh
+
+
+-The application takes around 30seconds to start (depending on the machine). Once started you will see this line in the output of the application:
+			"INFO [main] org.apache.catalina.startup.Catalina.start Server startup in 24316 ms"
+-The logs of the application are written into the file tomcat-esp-api-v03.94/logs/catalina.out
+
+-You can access the application from here: http://localhost:8080
+-To view the documentation, open the following URL in a browser: http://localhost:8080/doc/esco_api_doc.html
