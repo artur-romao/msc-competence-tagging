@@ -1,22 +1,15 @@
-from fastapi import FastAPI, HTTPException, Body
+from fastapi import FastAPI, HTTPException, Body, Depends
 from fastapi.middleware.cors import CORSMiddleware
 import pandas as pd
 import redis
 import requests
-from contextlib import asynccontextmanager
 from config import ESCO_API_ENDPOINT, ESCO_API_LANG, FLOWISE_MATCHER_API_URL, FLOWISE_SHORTER_API_URL, TAGGING_UI_URL
-from database import engine, database
-from models import metadata
+from models import Course
+from database import get_db
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
 
-metadata.create_all(bind=engine)
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    await database.connect()
-    yield
-    await database.disconnect()
-
-
-app = FastAPI(lifespan=lifespan)
+app = FastAPI()
 
 # Setup this later
 
@@ -84,7 +77,7 @@ async def query_course(course_name: str = Body(..., embed=True)):
 async def populate_redis():
     try:
         # Read the Excel file into a DataFrame
-        df = pd.read_excel('data/organized_DPUCS.xlsx')
+        df = pd.read_excel('data/final_dpucs.xlsx')
 
         # Connect to Redis
         redis_client = redis.Redis(host='db', port=6379, db=0) # Pass this to config.py
@@ -100,4 +93,28 @@ async def populate_redis():
         return {"status": "Data stored in Redis successfully"}
 
     except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+@app.post('/populate-postgres')
+async def populate_postgres(db: AsyncSession = Depends(get_db)):
+    try:
+        # Read the Excel file into a DataFrame
+        df = pd.read_excel('data/final_dpucs.xlsx')
+
+        async with db as session:
+            # Convert and store the data
+            for _, row in df.iterrows():
+                course = Course(
+                    course_name = row['Name'],
+                    contents = row['Contents'],
+                    objectives = row['Objectives'],
+                    skills = []  # Empty list for now
+                )
+                session.add(course)
+            await session.commit()
+        
+        return {"status": "Data stored in PostgreSQL successfully"}
+
+    except Exception as e:
+        await db.rollback()
         raise HTTPException(status_code=500, detail=str(e))

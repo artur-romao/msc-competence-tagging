@@ -1,13 +1,15 @@
-from sqlalchemy import Table, Column, Integer, String, create_engine
+from sqlalchemy import Column, Integer, String
 from sqlalchemy.dialects.postgresql import ARRAY
-from database import metadata
+from sqlalchemy.ext.declarative import declarative_base
 
-Course = Table(
-    "courses",
-    metadata,
-    Column("id", Integer, primary_key=True, index=True),
-    Column("course_name", String),
-    Column("objectives", String),
-    Column("contents", String),
-    Column("skills", ARRAY(String)),
-)
+Base = declarative_base()
+
+class Course(Base):
+    __tablename__ = "courses"
+
+    id = Column(Integer, primary_key=True, index=True)
+    course_name = Column(String, index=True)
+    objectives = Column(String)
+    contents = Column(String)
+    skills = Column(ARRAY(String))
+
