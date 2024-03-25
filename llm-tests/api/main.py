@@ -8,6 +8,7 @@ from models import Course
 from database import get_db
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from typing import List
 
 app = FastAPI()
 
@@ -118,3 +119,12 @@ async def populate_postgres(db: AsyncSession = Depends(get_db)):
     except Exception as e:
         await db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
+    
+@app.get("/search-courses", response_model=List[str])
+async def search_courses(query: str, db: AsyncSession = Depends(get_db)):
+    async with db as session:
+        result = await session.execute(
+            select(Course.course_name).where(Course.course_name.ilike(f"%{query}%")).order_by(Course.course_name)
+        )
+        course_names = result.scalars().all()
+        return course_names

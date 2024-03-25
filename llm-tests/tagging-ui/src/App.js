@@ -79,6 +79,8 @@ function App() {
 
   const chatWindowRef = useRef(null);
 
+  const apiUrl = process.env.REACT_APP_API_URL || 'http://web:8000'; // Fallback URL
+
   useEffect(() => {
     // Scroll to the bottom of the ChatWindow whenever messages change
     if (chatWindowRef.current) {
@@ -86,9 +88,30 @@ function App() {
     }
   }, [messages]); // Depend on messages
 
+  const fetchCourses = async(substring) => {
+    try {
+      const response = await fetch(`${apiUrl}/search-courses?query=${encodeURIComponent(substring)}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+  
+      if (!response.ok) {
+        throw new Error(`Error: ${response.statusText}`);
+      }
+  
+      const data = await response.json();
+      return data;
+    }
+    catch (error) {
+      console.error("Failed to fetch courses:", error);
+      return null;
+    }
+  }
+
   const fetchSkills = async (courseName) => {
     try {
-      const apiUrl = process.env.REACT_APP_API_URL || 'http://web:8000'; // Fallback URL
       const response = await fetch(`${apiUrl}/query`, {
         method: 'POST',
         headers: {
