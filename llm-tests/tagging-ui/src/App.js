@@ -25,6 +25,27 @@ const ChatWindow = styled.div`
   height: 67%;
 `;
 
+const DropdownContainer = styled.div`
+  overflow-y: auto;
+  text-align: left;
+  max-height: 20rem;
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #ccc;
+  z-index: 10;
+`;
+
+const DropdownItem = styled.div`
+  padding: 10px;
+  cursor: pointer;
+  &:hover {
+    background-color: #f0f0f0;
+  }
+`;
+
 const InputArea = styled.div`
   position: absolute;
   bottom: 0;
@@ -76,6 +97,8 @@ const MessageText = ({ text }) => {
 function App() {
   const [messages, setMessages] = useState([]);
   const [query, setQuery] = useState('');
+  const [courses, setCourses] = useState([]);
+  const [showDropdown, setShowDropdown] = useState(false);
 
   const chatWindowRef = useRef(null);
 
@@ -88,27 +111,36 @@ function App() {
     }
   }, [messages]); // Depend on messages
 
-  const fetchCourses = async(substring) => {
+  const handleDropdownSelect = (courseName) => {
+    setQuery(courseName);
+    setShowDropdown(false);
+  };
+
+  const fetchCourses = async (substring) => {
     try {
-      const response = await fetch(`${apiUrl}/search-courses?query=${encodeURIComponent(substring)}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+      if (substring.length >= 4) {
+        const response = await fetch(`${apiUrl}/search-courses?query=${encodeURIComponent(substring)}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
   
-      if (!response.ok) {
-        throw new Error(`Error: ${response.statusText}`);
+        if (!response.ok) {
+          throw new Error(`Error: ${response.statusText}`);
+        }
+  
+        const data = await response.json();
+        setCourses(data);
+        setShowDropdown(true);
+      } else {
+        setShowDropdown(false);
       }
-  
-      const data = await response.json();
-      return data;
-    }
-    catch (error) {
+    } catch (error) {
       console.error("Failed to fetch courses:", error);
-      return null;
+      setShowDropdown(false);
     }
-  }
+  };  
 
   const fetchSkills = async (courseName) => {
     try {
@@ -164,12 +196,24 @@ function App() {
         ))}
       </ChatWindow>
       <InputArea>
-        <Input
-          value={query}
-          onChange={e => setQuery(e.target.value)}
-          type="text"
-          placeholder="Enter course name..."
-        />
+      {showDropdown && (
+        <DropdownContainer>
+          {courses.map((course, index) => (
+            <DropdownItem key={index} onClick={() => handleDropdownSelect(course)}>
+              {course}
+            </DropdownItem>
+          ))}
+        </DropdownContainer>
+      )}
+      <Input
+        value={query}
+        onChange={e => {
+          setQuery(e.target.value);
+          fetchCourses(e.target.value);
+        }}
+        type="text"
+        placeholder="Enter course name..."
+      />
         <Button onClick={handleSend}>Send</Button>
       </InputArea>
     </AppContainer>
