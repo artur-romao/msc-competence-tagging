@@ -23,6 +23,8 @@ const ChatWindow = styled.div`
   overflow-y: auto;
   margin-bottom: 1rem;
   height: 67%;
+  display: flex;
+  flex-direction: column;
 `;
 
 const DropdownContainer = styled.div`
@@ -75,6 +77,9 @@ const Message = styled.div`
   max-width: 60%;
   align-self: ${(props) => (props.from === 'user' ? 'flex-end' : 'flex-start')};
   background-color: ${(props) => (props.from === 'user' ? '#007bff' : '#666')};
+  display: flex;
+  justify-content: ${(props) => (props.from === 'user' ? 'flex-end' : 'flex-start')};
+  overflow-wrap: break-word;
 `;
 
 const MessageText = ({ text }) => {
@@ -174,13 +179,15 @@ function App() {
     setMessages([...messages, { from: 'user', text: courseName }]);
     
     const skillsResponse = await fetchSkills(courseName);
-    console.log(skillsResponse.text)
     if (skillsResponse) {
       // Assuming the API returns a list of skills directly
       // const skillsText = `Skills: ${skillsResponse.join(', ')}`;
       setMessages(currentMessages => [...currentMessages, { from: 'system', text: skillsResponse.text }]);
     }
-
+    else {
+      setMessages(messages => [...messages, { from: 'system', text: "No skills are available for the provided course." }]);
+    }
+    setShowDropdown(false);
   };
 
   return (
