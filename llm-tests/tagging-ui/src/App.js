@@ -76,10 +76,12 @@ const Message = styled.div`
   color: white;
   max-width: 60%;
   align-self: ${(props) => (props.from === 'user' ? 'flex-end' : 'flex-start')};
-  background-color: ${(props) => (props.from === 'user' ? '#007bff' : '#666')};
+  background-color: ${(props) => (props.from === 'user' ? '#0eb4bd' : '#d3d3d3')};
+  color: ${(props) => (props.from === 'user' ? '#ffffff' : '#000000')};
   display: flex;
   justify-content: ${(props) => (props.from === 'user' ? 'flex-end' : 'flex-start')};
   overflow-wrap: break-word;
+  font-family: sans-serif;
 `;
 
 const MessageText = ({ text }) => {
