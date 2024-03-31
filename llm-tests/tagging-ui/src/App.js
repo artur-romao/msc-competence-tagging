@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
+import "./App.css"
 
 const AppContainer = styled.div`
   display: flex;  
@@ -13,7 +14,7 @@ const AppHeader = styled.header`
   background-color: #0eb4bd;
   padding: 20px;
   color: white;
-  font-family: sans-serif;
+  font-family: "Open Sans", sans-serif;
 `;
 
 const ChatWindow = styled.div`
@@ -46,6 +47,7 @@ const DropdownItem = styled.div`
   &:hover {
     background-color: #f0f0f0;
   }
+  font-family: "Open Sans", sans-serif;
 `;
 
 const InputArea = styled.div`
@@ -81,7 +83,47 @@ const Message = styled.div`
   display: flex;
   justify-content: ${(props) => (props.from === 'user' ? 'flex-end' : 'flex-start')};
   overflow-wrap: break-word;
-  font-family: sans-serif;
+  font-family: "Open Sans", sans-serif;
+`;
+
+const wave = keyframes`
+  0%, 60%, 100% {
+    transform: initial;
+  }
+  30% {
+    transform: translateY(-15px);
+  }
+`;
+
+const Dot = styled.div`
+  background-color: ${props => props.color};
+  border-radius: 50%;
+  width: 10px;
+  height: 10px;
+  margin: 0 5px;
+  /* Animation */
+  animation: ${wave} 1.3s linear infinite;
+  
+  &:nth-child(2) {
+    animation-delay: -1.1s;
+  }
+  
+  &:nth-child(3) {
+    animation-delay: -0.9s;
+  }
+`;
+
+const SystemMessageContainer = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: flex-start; // Aligns to the left
+  padding-left: 10px; // Give some space from the left edge
+`;
+
+const LoadingDots = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
 `;
 
 const MessageText = ({ text }) => {
@@ -101,11 +143,20 @@ const MessageText = ({ text }) => {
   );
 };
 
+const LoadingAnimation = () => (
+  <LoadingDots>
+    <Dot color="#e74c3c" />
+    <Dot color="#3498db" />
+    <Dot color="#f1c40f" />
+  </LoadingDots>
+);
+
 function App() {
   const [messages, setMessages] = useState([]);
   const [query, setQuery] = useState('');
   const [courses, setCourses] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const chatWindowRef = useRef(null);
 
@@ -174,6 +225,7 @@ function App() {
   
 
   const handleSend = async () => {
+    setIsLoading(true);
     const courseName = query
     setQuery('');
     if (!courseName.trim()) return;
@@ -181,6 +233,7 @@ function App() {
     setMessages([...messages, { from: 'user', text: courseName }]);
     
     const skillsResponse = await fetchSkills(courseName);
+    setIsLoading(false);
     if (skillsResponse) {
       // Assuming the API returns a list of skills directly
       // const skillsText = `Skills: ${skillsResponse.join(', ')}`;
@@ -203,6 +256,10 @@ function App() {
             <MessageText text={msg.text} />
           </Message>
         ))}
+        {isLoading && (
+          <SystemMessageContainer>
+            <LoadingAnimation />
+          </SystemMessageContainer>)}
       </ChatWindow>
       <InputArea>
       {showDropdown && (
