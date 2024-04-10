@@ -35,10 +35,6 @@ def read_root():
 async def query_course(course_name: str = Body(..., embed=True)):
     # Connect to Redis
     redis_client = redis.Redis(host='db', port=6379, db=0) # Pass this to config.py
-    if course_name == "DATABASES":
-        return {"text": "redis\nmongodb\ncassandra\nneo4j"}
-    if course_name == "ADVANCED DATABASES":
-        return {"text": "SQL\nNoSQL\nmanage databases"}
     if redis_client.exists(course_name):
         course_info = redis_client.hgetall(course_name)
         # Convert bytes to string for readability (Redis stores data as bytes)
