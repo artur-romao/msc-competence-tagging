@@ -11,6 +11,7 @@ metadata = MetaData()
 
 # For synchronous operations, mainly migrations
 sync_engine = create_engine(DATABASE_URL.replace("+asyncpg", ""))
+metadata.create_all(sync_engine)
 
 async def get_db():
     async_session = sessionmaker(

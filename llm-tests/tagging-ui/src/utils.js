@@ -1,12 +1,49 @@
 import React, { useState, } from 'react';
 import styled, { keyframes } from 'styled-components';
 
-// STATES
+
+// LOADING DOTS COMPONENTS
+
+const wave = keyframes`
+    0%, 60%, 100% {
+      transform: initial;
+    }
+    30% {
+      transform: translateY(-15px);
+    }
+  `;
+
+  const Dot = styled.div`
+    background-color: ${props => props.color};
+    border-radius: 50%;
+    width: 10px;
+    height: 10px;
+    margin: 0 5px;
+    /* Animation */
+    animation: ${wave} 1.3s linear infinite;
+    
+    &:nth-child(2) {
+      animation-delay: -1.1s;
+    }
+    
+    &:nth-child(3) {
+      animation-delay: -0.9s;
+    }
+  `;
+
+  const LoadingDots = styled.div`
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  `;
 
 export const useChatLogic = () => {
 
+  // STATES
+  
   const [messages, setMessages] = useState([]);
   const [query, setQuery] = useState('');
+  const [latestQueriedCourse, setLatestQueriedCourse] = useState('');
   const [courses, setCourses] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -66,13 +103,40 @@ export const useChatLogic = () => {
       }
   };
 
+  const updateCourseSkills = async (courseName, selectedSkills) => {
+    try {
+      const payload = {
+        course_name: courseName,
+        skills: selectedSkills
+      };
+      const response = await fetch(`${apiUrl}/update-course-skills`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+     });
+  
+     if (!response.ok) {
+      throw new Error(`Error: ${response.status} ${response.statusText}`);
+  }
+  
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error("Failed to fetch skills:", error);
+      return null;
+    }
+  };
+
   // UTILS FUNCTIONS
 
   const handleSend = async () => {
     setLatestMessageIndex(messages.length);
     setSelectedSkills({});
     setIsLoading(true);
-    const courseName = query
+    const courseName = query;
+    setLatestQueriedCourse(query);
     setQuery('');
     if (!courseName.trim()) return;
 
@@ -104,11 +168,9 @@ export const useChatLogic = () => {
     setShowDropdown(false);
   };
 
-  const handleSaveSkills = () => {
-    console.log('Selected Skills:', selectedSkills);
-    // Save the selected skills as needed, then clear selections
-    // setSelectedSkills({});
-    // Optionally send the selected skills to an API or backend service
+  const handleSaveSkills = async () => {
+    const updateResponse = await updateCourseSkills(latestQueriedCourse, selectedSkills);
+    console.log(updateResponse);
   };
 
   const updateMessageSkills = (messageIndex, newSkills) => {
@@ -129,38 +191,7 @@ export const useChatLogic = () => {
     });
   };
 
-  const wave = keyframes`
-    0%, 60%, 100% {
-      transform: initial;
-    }
-    30% {
-      transform: translateY(-15px);
-    }
-  `;
-
-  const Dot = styled.div`
-    background-color: ${props => props.color};
-    border-radius: 50%;
-    width: 10px;
-    height: 10px;
-    margin: 0 5px;
-    /* Animation */
-    animation: ${wave} 1.3s linear infinite;
-    
-    &:nth-child(2) {
-      animation-delay: -1.1s;
-    }
-    
-    &:nth-child(3) {
-      animation-delay: -0.9s;
-    }
-  `;
-
-  const LoadingDots = styled.div`
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  `;
+  // LOADING DOTS ANIMATION LOGIC
 
   const LoadingAnimation = () => (
     <LoadingDots>

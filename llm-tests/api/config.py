@@ -16,8 +16,8 @@ TAGGING_POSTGRES_PASSWORD = os.getenv('TAGGING_POSTGRES_PASSWORD')
 
 ESCO_API_ENDPOINT = "http://esco_api:8080/search"
 ESCO_API_LANG = "en"
-FLOWISE_MATCHER_API_URL = "http://flowise:5000/api/v1/prediction/e9aaf512-9142-4a9a-b357-70b69f84731f"
-FLOWISE_SHORTER_API_URL = "http://flowise:5000/api/v1/prediction/eb6d81f6-95ab-44e2-b970-71d514198f3a"
+FLOWISE_MATCHER_API_URL = "http://flowise:5000/api/v1/prediction/e5bcffaf-f5a1-448a-8c20-8011bfd467c4"
+FLOWISE_SHORTER_API_URL = "http://flowise:5000/api/v1/prediction/8fa1789b-a2f4-4e39-b93d-f060b3d875fc"
 TAGGING_UI_URL = "http://tagging-ui:3000/"
 
 #bard_cookies = firefox_cookies(BARD_URL)

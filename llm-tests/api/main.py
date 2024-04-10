@@ -4,11 +4,16 @@ import pandas as pd
 import redis
 import requests
 from config import ESCO_API_ENDPOINT, ESCO_API_LANG, FLOWISE_MATCHER_API_URL, FLOWISE_SHORTER_API_URL, TAGGING_UI_URL
-from models import Course
+from models import Course, Skill
 from database import get_db
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from typing import List
+from typing import Annotated, List, Dict
+from pydantic import BaseModel, StringConstraints
+
+class SkillsUpdate(BaseModel):
+    course_name: Annotated[str, StringConstraints(strip_whitespace=True)]
+    skills: Dict[str, bool]
 
 app = FastAPI()
 
@@ -30,7 +35,10 @@ def read_root():
 async def query_course(course_name: str = Body(..., embed=True)):
     # Connect to Redis
     redis_client = redis.Redis(host='db', port=6379, db=0) # Pass this to config.py
-    
+    if course_name == "DATABASES":
+        return {"text": "redis\nmongodb\ncassandra\nneo4j"}
+    if course_name == "ADVANCED DATABASES":
+        return {"text": "SQL\nNoSQL\nmanage databases"}
     if redis_client.exists(course_name):
         course_info = redis_client.hgetall(course_name)
         # Convert bytes to string for readability (Redis stores data as bytes)
@@ -109,7 +117,6 @@ async def populate_postgres(db: AsyncSession = Depends(get_db)):
                     course_name = row['Name'],
                     contents = row['Contents'],
                     objectives = row['Objectives'],
-                    skills = []  # Empty list for now
                 )
                 session.add(course)
             await session.commit()
@@ -119,7 +126,44 @@ async def populate_postgres(db: AsyncSession = Depends(get_db)):
     except Exception as e:
         await db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
-    
+
+@app.post('/update-course-skills')
+async def update_course_skills(update: SkillsUpdate, db: AsyncSession = Depends(get_db)):
+    try:
+        # Start a transaction
+        async with db.begin():
+            # Select the course by name
+            course_stmt = select(Course).where(Course.course_name == update.course_name)
+            course_result = await db.execute(course_stmt)
+            course = course_result.scalar_one_or_none()
+
+            if not course:
+                raise HTTPException(status_code=404, detail="Course not found")
+
+            # Now, let's update or create skills
+            for skill_name, is_selected in update.skills.items():
+                # Check if the skill already exists for this course
+                skill_stmt = select(Skill).where(Skill.name == skill_name, Skill.course_id == course.id)
+                skill_result = await db.execute(skill_stmt)
+                skill = skill_result.scalar_one_or_none()
+
+                # If the skill exists, update it
+                if skill:
+                    skill.is_selected = is_selected
+                else:
+                    # Otherwise, create a new skill
+                    new_skill = Skill(name=skill_name, is_selected=is_selected, course_id=course.id)
+                    db.add(new_skill)  # Make sure to add it to the session
+
+            # Commit at the end of the loop
+            await db.commit()
+
+        return {"status": "Skills updated successfully"}
+
+    except Exception as e:
+        await db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.get("/search-courses", response_model=List[str])
 async def search_courses(query: str, db: AsyncSession = Depends(get_db)):
     async with db as session:
