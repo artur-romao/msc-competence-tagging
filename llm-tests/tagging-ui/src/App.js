@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import "./App.css"
 import { useChatLogic } from './utils.js';
@@ -89,10 +89,25 @@ const SystemMessageContainer = styled.div`
   padding-left: 10px; // Give some space from the left edge
 `;
 
+const SkillInputContainer = styled.div`
+  display: flex;
+  align-items: center;
+`;
+
+const SkillInput = styled.input`
+  flex: 1;
+  margin-right: 5px;
+`;
+
+const AddSkillButton = styled.button`
+  padding: 5px 10px;
+`;
+
 function App() {
   const chatWindowRef = useRef(null);
   const {
     messages,
+    setMessages,
     query,
     setQuery,
     courses,
@@ -105,17 +120,40 @@ function App() {
     handleDropdownSelect,
     handleSaveSkills,
     handleSkillChange,
+    addSkillToLatestMessage,
     LoadingAnimation
   } = useChatLogic();
 
+  // Scroll to the bottom of the ChatWindow whenever messages change
   useEffect(() => {
-    // Scroll to the bottom of the ChatWindow whenever messages change
     if (chatWindowRef.current) {
       chatWindowRef.current.scrollTop = chatWindowRef.current.scrollHeight;
     }
   }, [messages]);
 
-  const Message = ({ from, text, skills, onSkillChange, onSave, isLatest}) => {
+  // Use effect to add a new skill to latest message by free text
+  useEffect(() => {
+    if (latestMessageIndex !== null) {
+        setMessages(currentMessages => 
+            currentMessages.map((msg, index) => {
+                if (index === latestMessageIndex + 1) {
+                    return { ...msg, skills: { ...selectedSkills } };
+                }
+                return msg;
+            })
+        );
+    }
+  }, [selectedSkills, latestMessageIndex, setMessages]);
+
+  const Message = ({ from, text, skills, onSkillChange, onSave, isLatest, addSkill}) => {
+    const [newSkill, setNewSkill] = useState('');  // State to hold the input for new skill
+
+    const handleAddSkill = () => {
+        if (newSkill.trim()) {
+            addSkill(newSkill.trim());
+            setNewSkill('');  // Clear the input after adding the skill
+        }
+    };
     const skillsPart = from === 'system' && skills && (
       <>
         {Object.entries(skills).map(([skillName, isSelected]) => (
@@ -123,7 +161,7 @@ function App() {
             {isLatest && <Checkbox
               checked={selectedSkills[skillName]}
               onChange={(e) => onSkillChange(skillName, e.target.checked)}
-              disabled={!isLatest}
+              disabled={false}
             />}
             {!isLatest && <Checkbox
               checked={isSelected}
@@ -133,6 +171,17 @@ function App() {
             {skillName}
           </SkillItem>
         ))}
+        {isLatest && skills.length != 0 && (
+            <SkillInputContainer>
+                <SkillInput
+                    type="text"
+                    value={newSkill}
+                    onChange={(e) => setNewSkill(e.target.value)}
+                    placeholder="Add a new skill"
+                />
+                <AddSkillButton onClick={handleAddSkill}>+</AddSkillButton>
+            </SkillInputContainer>
+        )}
         {isLatest && <Button onClick={onSave} style={{padding:'5px 10px', width:'50%', margin:'0 25%'}}>Save</Button>}
       </>
     );
@@ -173,6 +222,7 @@ function App() {
             onSkillChange={handleSkillChange}
             onSave={handleSaveSkills}
             isLatest={index - 1 === latestMessageIndex}
+            addSkill={addSkillToLatestMessage}
           />
         ))}
         {isLoading && (

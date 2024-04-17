@@ -186,6 +186,13 @@ export const useChatLogic = () => {
     });
   };
 
+  const addSkillToLatestMessage = (skillName) => {
+    setSelectedSkills(prev => ({
+        ...prev,
+        [skillName]: true
+    }));
+};
+
   // LOADING DOTS ANIMATION LOGIC
 
   const LoadingAnimation = () => (
@@ -218,6 +225,7 @@ export const useChatLogic = () => {
     handleSaveSkills,
     updateMessageSkills,
     handleSkillChange,
+    addSkillToLatestMessage,
     LoadingAnimation,
   };
 };
