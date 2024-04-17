@@ -132,35 +132,30 @@ export const useChatLogic = () => {
   // UTILS FUNCTIONS
 
   const handleSend = async () => {
+    const courseName = query;
+    if (!courseName.trim()) return;
+    setIsLoading(true);
     setLatestMessageIndex(messages.length);
     setSelectedSkills({});
-    setIsLoading(true);
-    const courseName = query;
     setLatestQueriedCourse(query);
+    setShowDropdown(false);
     setQuery('');
-    if (!courseName.trim()) return;
 
     setMessages([...messages, { from: 'user', text: courseName }]);
     const skillsResponse = await fetchSkills(courseName);
     setIsLoading(false);
 
-    if (skillsResponse) {
-      const skillsList = skillsResponse.text.split("\n");
-      let skillsDict = skillsList.reduce((acc, skill) => ({
-        ...acc,
-        [skill]: true,
-      }), {});
-      setSelectedSkills(JSON.parse(JSON.stringify(skillsDict)));
+    if (!skillsResponse) { // 404, queried course not stored in db or server error...
+      setMessages(messages => [...messages, { from: 'system', text: "No skills are available for the provided course." }]);
+    }
+    else { // Backend returns skills stored in db or from LLM computation
+      setSelectedSkills(skillsResponse);
       setMessages(currentMessages => [...currentMessages, {
         from: 'system',
         text: 'Please select the relevant skills:\n', // Added \n for new line
-        skills: skillsDict,
+        skills: skillsResponse,
       }]);
     }
-    else {
-      setMessages(messages => [...messages, { from: 'system', text: "No skills are available for the provided course." }]);
-    }
-    setShowDropdown(false);
   };
 
   const handleDropdownSelect = (courseName) => {

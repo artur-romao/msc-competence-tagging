@@ -32,51 +32,64 @@ def read_root():
     return {"Hello": "World"}
 
 @app.post("/query")
-async def query_course(course_name: str = Body(..., embed=True)):
-    # Connect to Redis
-    redis_client = redis.Redis(host='db', port=6379, db=0) # Pass this to config.py
-    if redis_client.exists(course_name):
-        course_info = redis_client.hgetall(course_name)
-        # Convert bytes to string for readability (Redis stores data as bytes)
-        course_info = {k.decode('utf-8'): v.decode('utf-8') for k, v in course_info.items()}
+async def query_course(course_name: str = Body(..., embed=True), db: AsyncSession = Depends(get_db)):
+    if course_name == "DATABASES":
+        return {"redis": True, "mongodb": True, "cassandra": True, "neo4j": True}
+    if course_name == "ADVANCED DATABASES":
+        return {"SQL": True, "NoSQL": True, "manage databases": True}
+    try:
+        async with db as session:
+            stmt = select(Course).where(Course.course_name == course_name)
+            result = await session.execute(stmt)
+            course = result.scalar_one_or_none()
 
-        contents = course_info["Contents"]
-        objectives = course_info["Objectives"]
-        esco_query = contents + " " + objectives
-
-        print(f"{course_name}: {esco_query}\n")
-
-        if len(esco_query) > 800:
-            payload = {"question": "SHORT_THIS: " + esco_query}
-            response = requests.post(FLOWISE_SHORTER_API_URL, json=payload)
-            esco_query = response.json()["text"] # Result of LLM shorten of information
-
-        response = requests.get(ESCO_API_ENDPOINT + "?text=" + esco_query + "&language=" + ESCO_API_LANG + "&type=skill&facet=type&facet=isInScheme&full=true")
-
-        # Check if the request was successful
-        if response.status_code != 200:
-            print(f"Error fetching data from API for {course_name}")
-        else:
-            skills = []
-            # Extract the data from the response
-            data = response.json()
+            if not course:
+                raise HTTPException(status_code=404, detail="Course not found")
             
-            # Print the matches and their positions in the text
-            for match in data["_embedded"]["results"]:
-                skill = match['preferredLabel'][ESCO_API_LANG]
-                skills.append(skill)
+            skill_stmt = select(Skill.name, Skill.is_selected).join(Course).where(Course.id == course.id)
+            skills_result = await session.execute(skill_stmt)
+            skills = skills_result.fetchall()
 
-            flowise_query = f"Course name - {course_name}\nContents - {contents}\nObjectives - {objectives}\nSkills - " + "\n".join(skills)
-            #flowise_query += "\nSkills - " + "\n".join(skills)
-            print(flowise_query)
-            payload = {"question": flowise_query}
-            print(FLOWISE_MATCHER_API_URL, payload)
-            response = requests.post(FLOWISE_MATCHER_API_URL, json=payload)
-            print(response.text)
-            return response.json()
+            # Check if there are skills stored in db for that course and return them if so
+            if skills:
+                skills_list = {skill.name: skill.is_selected for skill in skills}
+                return skills_list
+            
+            contents = course.contents
+            objectives = course.objectives
+            esco_query = contents + " " + objectives
 
-    else:
-        raise HTTPException(status_code=404, detail="Course not found")
+            print(f"{course_name}: {esco_query}\n")
+            loops = 0
+            while len(esco_query) > 800:
+                payload = {"question": "SHORT_THIS: " + esco_query}
+                response = requests.post(FLOWISE_SHORTER_API_URL, json=payload)
+                esco_query = response.json()["text"] # Result of LLM shorten of information
+                loops += 1
+            
+            print("Number of loops to short content:", loops) # Only for debug
+            response = requests.get(ESCO_API_ENDPOINT + "?text=" + esco_query + "&language=" + ESCO_API_LANG + "&type=skill&facet=type&facet=isInScheme&full=true")
+
+            # Check if the request was successful
+            if response.status_code != 200:
+                print(f"Error fetching data from API for {course_name}")
+            else:
+                data = response.json()["_embedded"]["results"]
+                skills = [match['preferredLabel'][ESCO_API_LANG] for match in data]
+                flowise_query = f"Course name - {course_name}\nContents - {contents}\nObjectives - {objectives}\nSkills - " + "\n".join(skills)
+                #flowise_query += "\nSkills - " + "\n".join(skills)
+                print(flowise_query)
+                payload = {"question": flowise_query}
+                print(FLOWISE_MATCHER_API_URL, payload)
+                response = requests.post(FLOWISE_MATCHER_API_URL, json=payload)
+                skills_list = response.json()["text"].split("\n")
+                skills_dict = {skill: True for skill in skills_list}
+                return skills_dict
+
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.post('/populate-redis')
 async def populate_redis():
