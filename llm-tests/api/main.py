@@ -141,7 +141,6 @@ async def update_course_skills(update: SkillsUpdate, db: AsyncSession = Depends(
     try:
         # Start a transaction
         async with db.begin():
-            # Select the course by name
             course_stmt = select(Course).where(Course.course_name == update.course_name)
             course_result = await db.execute(course_stmt)
             course = course_result.scalar_one_or_none()
@@ -149,9 +148,7 @@ async def update_course_skills(update: SkillsUpdate, db: AsyncSession = Depends(
             if not course:
                 raise HTTPException(status_code=404, detail="Course not found")
 
-            # Now, let's update or create skills
             for skill_name, is_selected in update.skills.items():
-                # Check if the skill already exists for this course
                 skill_stmt = select(Skill).where(Skill.name == skill_name, Skill.course_id == course.id)
                 skill_result = await db.execute(skill_stmt)
                 skill = skill_result.scalar_one_or_none()
@@ -162,7 +159,7 @@ async def update_course_skills(update: SkillsUpdate, db: AsyncSession = Depends(
                 else:
                     # Otherwise, create a new skill
                     new_skill = Skill(name=skill_name, is_selected=is_selected, course_id=course.id)
-                    db.add(new_skill)  # Make sure to add it to the session
+                    db.add(new_skill)
 
             # Commit at the end of the loop
             await db.commit()
