@@ -4,6 +4,7 @@ export const useEditCourseLogic = () => {
 
     // STATES
     const [courseName, setCourseName] = useState('');
+    const [lastCourseName, setLastCourseName] = useState('');
     const [objectives, setObjectives] = useState('');
     const [contents, setContents] = useState('');
     const [courses, setCourses] = useState([]);
@@ -39,14 +40,49 @@ export const useEditCourseLogic = () => {
         }
     };
 
+    const fetchCourseInfo = async (courseName) => {
+      try {
+        const response = await fetch(`${apiUrl}/query`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*'
+          },
+          body: JSON.stringify({ course_name: courseName, get_skills: false }),
+        });
+    
+        if (!response.ok) {
+          throw new Error(`Error: ${response.statusText}`);
+        }
+    
+        const data = await response.json();
+        return data;
+      } catch (error) {
+        console.error("Failed to fetch skills:", error);
+        return null;
+      }
+    };
+
+    // UTILS FUNCTIONS
+
     const handleDropdownSelect = (courseName) => {
-        setCourseName(courseName);
-        setShowDropdown(false);
+      setCourseName(courseName);
+      setLastCourseName(courseName);
+      setShowDropdown(false);
+      fillCourseInfo(courseName);
     };
     
+    const fillCourseInfo = async(courseName) => {
+      const data = await fetchCourseInfo(courseName);
+      setContents(data.contents);
+      setObjectives(data.objectives);
+    }
+
     return {
         courseName,
         setCourseName,
+        lastCourseName,
+        setLastCourseName,
         contents,
         setContents,
         objectives,
@@ -56,6 +92,8 @@ export const useEditCourseLogic = () => {
         showDropdown,
         setShowDropdown,
         fetchCourses,
+        fetchCourseInfo,
         handleDropdownSelect,
+        fillCourseInfo,
       };
 }

@@ -32,11 +32,7 @@ def read_root():
     return {"Hello": "World"}
 
 @app.post("/query")
-async def query_course(course_name: str = Body(..., embed=True), db: AsyncSession = Depends(get_db)):
-    if course_name == "DATABASES":
-        return {"redis": True, "mongodb": True, "cassandra": True, "neo4j": True}
-    if course_name == "ADVANCED DATABASES":
-        return {"SQL": True, "NoSQL": True, "manage databases": True}
+async def query_course(course_name: str = Body(..., embed=True), get_skills: bool = Body(..., embed=False), db: AsyncSession = Depends(get_db)):
     try:
         async with db as session:
             stmt = select(Course).where(Course.course_name == course_name)
@@ -45,6 +41,14 @@ async def query_course(course_name: str = Body(..., embed=True), db: AsyncSessio
 
             if not course:
                 raise HTTPException(status_code=404, detail="Course not found")
+            
+            if not get_skills: # If the point is not to get skills, return course contents and objectives 
+                return {"contents": course.contents, "objectives": course.objectives}
+
+            if course_name == "DATABASES":
+                return {"redis": True, "mongodb": True, "cassandra": True, "neo4j": True}
+            if course_name == "ADVANCED DATABASES":
+                return {"SQL": True, "NoSQL": True, "manage databases": True}
             
             skill_stmt = select(Skill.name, Skill.is_selected).join(Course).where(Course.id == course.id)
             skills_result = await session.execute(skill_stmt)
