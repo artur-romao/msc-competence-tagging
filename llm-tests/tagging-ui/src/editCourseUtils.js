@@ -63,6 +63,29 @@ export const useEditCourseLogic = () => {
       }
     };
 
+    const updateCourseInfo = async (courseName, contents, objectives) => {
+      try {
+        const response = await fetch(`${apiUrl}/update-course`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*'
+          },
+          body: JSON.stringify({ course_name: courseName, contents: contents, objectives: objectives }),
+        });
+    
+        if (!response.ok) {
+          throw new Error(`Error: ${response.statusText}`);
+        }
+    
+        const data = await response.json();
+        return data;
+      } catch (error) {
+        console.error("Failed to fetch skills:", error);
+        return null;
+      }
+    };
+
     // UTILS FUNCTIONS
 
     const handleDropdownSelect = (courseName) => {
@@ -77,6 +100,11 @@ export const useEditCourseLogic = () => {
       setContents(data.contents);
       setObjectives(data.objectives);
     }
+
+    const handleSave = async() => {
+      const response = await updateCourseInfo(lastCourseName, contents, objectives);
+      console.log(response);
+    };
 
     return {
         courseName,
@@ -95,5 +123,6 @@ export const useEditCourseLogic = () => {
         fetchCourseInfo,
         handleDropdownSelect,
         fillCourseInfo,
+        handleSave
       };
 }

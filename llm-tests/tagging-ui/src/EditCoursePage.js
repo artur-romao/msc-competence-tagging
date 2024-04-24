@@ -103,11 +103,6 @@ const SaveButton = styled.button`
 
 function EditCoursePage() {
 
-  const handleSave = () => {
-    console.log('Save', { courseName, objectives, contents });
-    // Here you will later include the call to your API to save the data
-  };
-
   const {
     courseName,
         setCourseName,
@@ -121,6 +116,7 @@ function EditCoursePage() {
         setShowDropdown,
         fetchCourses,
         handleDropdownSelect,
+        handleSave,
   } = useEditCourseLogic();
 
   return (

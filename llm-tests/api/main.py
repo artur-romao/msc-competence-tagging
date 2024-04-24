@@ -15,6 +15,11 @@ class SkillsUpdate(BaseModel):
     course_name: Annotated[str, StringConstraints(strip_whitespace=True)]
     skills: Dict[str, bool]
 
+class CourseUpdate(BaseModel):
+    course_name: Annotated[str, StringConstraints(strip_whitespace=True)]
+    contents: Annotated[str, StringConstraints(strip_whitespace=True)] 
+    objectives: Annotated[str, StringConstraints(strip_whitespace=True)]
+
 app = FastAPI()
 
 # Setup this later
@@ -182,3 +187,26 @@ async def search_courses(query: str, db: AsyncSession = Depends(get_db)):
         )
         course_names = result.scalars().all()
         return course_names
+    
+@app.put('/update-course')
+async def update_course(update: CourseUpdate, db: AsyncSession = Depends(get_db)):
+    print(update.course_name, update.contents, update.objectives)
+    try:
+        async with db.begin():
+            course_stmt = select(Course).where(Course.course_name == update.course_name)
+            course_result = await db.execute(course_stmt)
+            course = course_result.scalar_one_or_none()
+
+            if course is None:
+                raise HTTPException(status_code=404, detail="Course not found")
+
+            course.contents = update.contents
+            course.objectives = update.objectives
+
+            await db.commit()
+
+        return {"status": "Course updated successfully"}
+
+    except Exception as e:
+        await db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
