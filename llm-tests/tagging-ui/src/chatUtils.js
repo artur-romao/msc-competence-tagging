@@ -1,6 +1,6 @@
 import React, { useState, } from 'react';
 import styled, { keyframes } from 'styled-components';
-
+import { toast } from "react-toastify";
 
 // LOADING DOTS COMPONENTS
 
@@ -120,9 +120,7 @@ export const useChatLogic = () => {
      if (!response.ok) {
       throw new Error(`Error: ${response.status} ${response.statusText}`);
   }
-  
-      const data = await response.json();
-      return data;
+      return response;
     } catch (error) {
       console.error("Failed to fetch skills:", error);
       return null;
@@ -164,8 +162,18 @@ export const useChatLogic = () => {
   };
 
   const handleSaveSkills = async () => {
-    const updateResponse = await updateCourseSkills(latestQueriedCourse, selectedSkills);
-    console.log(updateResponse);
+    try {
+      const updateResponse = await updateCourseSkills(latestQueriedCourse, selectedSkills);
+      console.log(updateResponse);
+      if (updateResponse.ok) {
+        toast.success(`Skills for course "${latestQueriedCourse}" updated successfully!`, { position: "top-center", hideProgressBar: true });
+      } else {
+        toast.error('Failed to update the course information.', { position: "top-center", hideProgressBar: true });
+      }
+    } catch (error) {
+      console.error("Failed to update course skills:", error);
+      toast.error('An error occurred while saving the course skills.', { position: "top-center", hideProgressBar: true });
+    }
   };
 
   const updateMessageSkills = (messageIndex, newSkills) => {

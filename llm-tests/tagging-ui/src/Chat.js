@@ -2,6 +2,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import "./App.css"
 import { useChatLogic } from './chatUtils.js';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const AppContainer = styled.div`
   display: flex;  
@@ -171,7 +173,7 @@ function Chat() {
             {skillName}
           </SkillItem>
         ))}
-        {isLatest && skills.length != 0 && (
+        {isLatest && skills.length !== 0 && (
             <SkillInputContainer>
                 <SkillInput
                     type="text"
@@ -208,6 +210,7 @@ function Chat() {
 
   return (
     <AppContainer>
+      <ToastContainer style={{width: "40rem"}}/>
       <AppHeader>
         <h1>University of Aveiro's Educational Offer Competence Tagging</h1>
       </AppHeader>

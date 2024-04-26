@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React from 'react';
 import styled from 'styled-components';
 import "./App.css"
-import { useChatLogic } from './chatUtils.js';
 import { useEditCourseLogic } from './editCourseUtils.js'
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const AppContainer = styled.div`
   display: flex;  
@@ -99,6 +100,7 @@ const SaveButton = styled.button`
   cursor: pointer;
   width: 8%;
   font-family: "Open Sans", sans-serif;
+  font-weight: bold;
 `;
 
 function EditCoursePage() {
@@ -111,9 +113,7 @@ function EditCoursePage() {
         objectives,
         setObjectives,
         courses,
-        setCourses,
         showDropdown,
-        setShowDropdown,
         fetchCourses,
         handleDropdownSelect,
         handleSave,
@@ -121,6 +121,7 @@ function EditCoursePage() {
 
   return (
     <AppContainer>
+        <ToastContainer style={{width: "40rem"}}/>
         <AppHeader><h1>Edit Course Information (DPUC)</h1></AppHeader>
         <InputContainer>
             <SearchArea>

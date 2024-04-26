@@ -1,8 +1,10 @@
-import React, { useState, } from 'react';
+import { useState, } from 'react';
+import { toast } from "react-toastify";
 
 export const useEditCourseLogic = () => {
 
     // STATES
+
     const [courseName, setCourseName] = useState('');
     const [lastCourseName, setLastCourseName] = useState('');
     const [objectives, setObjectives] = useState('');
@@ -78,8 +80,7 @@ export const useEditCourseLogic = () => {
           throw new Error(`Error: ${response.statusText}`);
         }
     
-        const data = await response.json();
-        return data;
+        return response;
       } catch (error) {
         console.error("Failed to fetch skills:", error);
         return null;
@@ -102,8 +103,17 @@ export const useEditCourseLogic = () => {
     }
 
     const handleSave = async() => {
-      const response = await updateCourseInfo(lastCourseName, contents, objectives);
-      console.log(response);
+      try {
+        const response = await updateCourseInfo(lastCourseName, contents, objectives);    
+        if (response.ok) {
+          toast.success('Course information updated successfully!', { position: "top-center", hideProgressBar: true });
+        } else {
+          toast.error('Failed to update the course information.', { position: "top-center", hideProgressBar: true });
+        }
+      } catch (error) {
+        console.error("Failed to update course:", error);
+        toast.error('An error occurred while updating the course.', { position: "top-center", hideProgressBar: true });
+      }
     };
 
     return {
