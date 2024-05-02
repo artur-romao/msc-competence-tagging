@@ -8,6 +8,7 @@ from models import Course, Skill
 from database import get_db
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from sqlalchemy import delete
 from typing import Annotated, List, Dict
 from pydantic import BaseModel, StringConstraints
 
@@ -202,6 +203,10 @@ async def update_course(update: CourseUpdate, db: AsyncSession = Depends(get_db)
 
             course.contents = update.contents
             course.objectives = update.objectives
+
+            # Delete skills associated with this course (so that they are calculated again based on the new course info)
+            delete_skills_stmt = delete(Skill).where(Skill.course_id == course.id)
+            await db.execute(delete_skills_stmt)
 
             await db.commit()
 
