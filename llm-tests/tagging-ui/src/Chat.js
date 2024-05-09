@@ -4,6 +4,7 @@ import "./App.css"
 import { useChatLogic } from './chatUtils.js';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { Link } from 'react-router-dom'; 
 
 const AppContainer = styled.div`
   display: flex;  
@@ -103,6 +104,16 @@ const SkillInput = styled.input`
 
 const AddSkillButton = styled.button`
   padding: 5px 10px;
+`;
+
+const NavLink = styled(Link)`
+  color: white;
+  text-decoration: none;
+  padding: 0 15px;
+
+  &:hover {
+    text-decoration: underline;
+  }
 `;
 
 function Chat() {
@@ -213,6 +224,9 @@ function Chat() {
       <ToastContainer style={{width: "40rem"}}/>
       <AppHeader>
         <h1>University of Aveiro's Educational Offer Competence Tagging</h1>
+        <NavLink to="/">Home</NavLink>
+        <NavLink to="/chat">Chat Interface</NavLink>
+        <NavLink to="/edit-course">Edit Course</NavLink>
       </AppHeader>
       <ChatWindow ref={chatWindowRef}>
         {messages.map((msg, index) => (

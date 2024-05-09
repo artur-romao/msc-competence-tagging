@@ -4,6 +4,7 @@ import "./App.css"
 import { useEditCourseLogic } from './editCourseUtils.js'
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { Link } from 'react-router-dom'; 
 
 const AppContainer = styled.div`
   display: flex;  
@@ -103,6 +104,16 @@ const SaveButton = styled.button`
   font-weight: bold;
 `;
 
+const NavLink = styled(Link)`
+  color: white;
+  text-decoration: none;
+  padding: 0 15px;
+
+  &:hover {
+    text-decoration: underline;
+  }
+`;
+
 function EditCoursePage() {
 
   const {
@@ -122,7 +133,12 @@ function EditCoursePage() {
   return (
     <AppContainer>
         <ToastContainer style={{width: "40rem"}}/>
-        <AppHeader><h1>Edit Course Information (DPUC)</h1></AppHeader>
+        <AppHeader>
+          <h1>Edit Course Information (DPUC)</h1>
+          <NavLink to="/">Home</NavLink>
+          <NavLink to="/chat">Chat Interface</NavLink>
+          <NavLink to="/edit-course">Edit Course</NavLink>
+        </AppHeader>
         <InputContainer>
             <SearchArea>
                 <Input
