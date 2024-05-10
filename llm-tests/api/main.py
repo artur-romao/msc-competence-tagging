@@ -8,7 +8,7 @@ from models import Course, Skill
 from database import get_db
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from sqlalchemy import delete
+from sqlalchemy import delete, or_, cast, String
 from typing import Annotated, List, Dict
 from pydantic import BaseModel, StringConstraints
 
@@ -184,11 +184,19 @@ async def update_course_skills(update: SkillsUpdate, db: AsyncSession = Depends(
 @app.get("/search-courses", response_model=List[str])
 async def search_courses(query: str, db: AsyncSession = Depends(get_db)):
     async with db as session:
-        result = await session.execute(
-            select(Course.course_name).where(Course.course_name.ilike(f"%{query}%")).order_by(Course.course_name)
-        )
-        course_names = result.scalars().all()
-        return course_names
+        try:
+            result = await session.execute(
+                select(Course.id, Course.course_name)
+                .where(or_(
+                    Course.course_name.ilike(f"%{query}%"),
+                    cast(Course.id, String).ilike(f"%{query}%")
+                ))
+                .order_by(Course.course_name)
+            )
+            course_list = [f"{id} {name}" for id, name in result]
+            return course_list
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e))
     
 @app.put('/update-course')
 async def update_course(update: CourseUpdate, db: AsyncSession = Depends(get_db)):

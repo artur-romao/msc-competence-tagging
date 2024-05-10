@@ -130,12 +130,12 @@ export const useChatLogic = () => {
   // UTILS FUNCTIONS
 
   const handleSend = async () => {
-    const courseName = query;
+    const courseName = query.replace(/^\d+\s*/, ''); // remove leading numbers "12345 SOFTWARE ENGINEERING" -> "SOFTWARE ENGINEERING"
     if (!courseName.trim()) return;
     setIsLoading(true);
     setLatestMessageIndex(messages.length);
     setSelectedSkills({});
-    setLatestQueriedCourse(query);
+    setLatestQueriedCourse(courseName);
     setShowDropdown(false);
     setQuery('');
 

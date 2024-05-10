@@ -143,7 +143,7 @@ function EditCoursePage() {
             <SearchArea>
                 <Input
                     type="text"
-                    placeholder="Search course by name..."
+                    placeholder="Search course by name or id..."
                     value={courseName}
                     onChange={(e) => {
                         setCourseName(e.target.value);

@@ -263,7 +263,7 @@ function Chat() {
             fetchCourses(e.target.value);
             }}
             type="text"
-            placeholder="Enter course name..."
+            placeholder="Enter course id or course name..."
         />
         <Button onClick={handleSend}>Send</Button>
       </InputArea>
