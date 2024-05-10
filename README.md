@@ -27,3 +27,8 @@ Therefore, the specific objectives of this dissertation can be summarized as fol
 * Evaluate the system’s performance, trusting on Course Directors’ manual verification of the skills’ matching.
 
 The ultimate goal of this dissertation is to provide the University of Aveiro's academic community with a trustable framework that maps the institution’s educational offer to standardized and specific skills of the European occupations and skills taxonomy (ESCO). This will help current and future students to have a better understanding of the University’s educational offer and companies’ Human Resources representatives to acknowledge and recognize UA’s former students (alumnis) skills upon hiring them.
+
+
+## System Architecture
+
+![image](./docs/architecture.png)
