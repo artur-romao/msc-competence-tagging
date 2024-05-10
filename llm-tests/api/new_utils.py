@@ -11,8 +11,7 @@ import json
 ##                      organized Excel file for it                         ##
 ##############################################################################
 
-FIELDS_TO_EXTRACT = ['Conteudos', 'Objetivos']
-file = "data/dados_dpuc_v3.xlsx"
+file = "data/LastDadosUC.xlsx"
 df = pd.read_excel(file)
 
 column_names = df.columns.tolist()
@@ -41,11 +40,12 @@ dpucs = {}
 
 # Construct dpucs dictionary with desired fields
 for index, row in df.iterrows():
-    course_name = row['Title']
-    if course_name not in dpucs:
-            dpucs[course_name] = {}
-    dpucs[course_name]['Objectives'] = remove_html_tags(row['Objectivos'])
-    dpucs[course_name]['Contents'] = remove_html_tags(row['Programa'])
+    course_id = row['CodigoPACO']
+    if course_id not in dpucs.keys():
+        dpucs[course_id] = {}
+    dpucs[course_id]['Name'] = row['Title']
+    dpucs[course_id]['Objectives'] = remove_html_tags(row['Objectivos'])
+    dpucs[course_id]['Contents'] = remove_html_tags(row['Programa'])
 
 # For now we'll try without tokenizing, afterwards we'll see
 
@@ -64,7 +64,7 @@ data = json.loads(dpucs_json)
 # Transform the JSON data into a suitable format for pandas
 transformed_data = []
 for key in data:
-    row = {'Name': key}
+    row = {'ID': key}
     row.update(data[key])
     transformed_data.append(row)
 
@@ -72,4 +72,4 @@ for key in data:
 df = pd.DataFrame(transformed_data)
 
 # Export to Excel
-df.to_excel('data/final_dpucs.xlsx', index=False)
+df.to_excel('data/magnum_opus.xlsx', index=False)
