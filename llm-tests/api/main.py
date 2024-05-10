@@ -127,12 +127,13 @@ async def populate_redis():
 async def populate_postgres(db: AsyncSession = Depends(get_db)):
     try:
         # Read the Excel file into a DataFrame
-        df = pd.read_excel('data/final_dpucs.xlsx')
+        df = pd.read_excel('data/dpucs_for_tagging.xlsx')
 
         async with db as session:
             # Convert and store the data
             for _, row in df.iterrows():
                 course = Course(
+                    id = row['ID'],
                     course_name = row['Name'],
                     contents = row['Contents'],
                     objectives = row['Objectives'],
