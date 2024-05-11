@@ -13,7 +13,7 @@ from typing import Annotated, List, Dict
 from pydantic import BaseModel, StringConstraints
 
 class SkillsUpdate(BaseModel):
-    course_name: Annotated[str, StringConstraints(strip_whitespace=True)]
+    course_id: Annotated[str, StringConstraints(strip_whitespace=True)]
     skills: Dict[str, bool]
 
 class CourseUpdate(BaseModel):
@@ -38,10 +38,10 @@ def read_root():
     return {"Hello": "World"}
 
 @app.post("/query")
-async def query_course(course_name: str = Body(..., embed=True), get_skills: bool = Body(..., embed=False), db: AsyncSession = Depends(get_db)):
+async def query_course(course_id: str = Body(..., embed=True), get_skills: bool = Body(..., embed=False), db: AsyncSession = Depends(get_db)):
     try:
         async with db as session:
-            stmt = select(Course).where(Course.course_name == course_name)
+            stmt = select(Course).where(cast(Course.id, String) == course_id)
             result = await session.execute(stmt)
             course = result.scalar_one_or_none()
 
@@ -51,9 +51,9 @@ async def query_course(course_name: str = Body(..., embed=True), get_skills: boo
             if not get_skills: # If the point is not to get skills, return course contents and objectives 
                 return {"contents": course.contents, "objectives": course.objectives}
 
-            if course_name == "DATABASES":
+            if course_id == "42532": # DATABASES
                 return {"redis": True, "mongodb": True, "cassandra": True, "neo4j": True}
-            if course_name == "ADVANCED DATABASES":
+            if course_id == "40385": # ADVANCED DATABASES
                 return {"SQL": True, "NoSQL": True, "manage databases": True}
             
             skill_stmt = select(Skill.name, Skill.is_selected).join(Course).where(Course.id == course.id)
@@ -65,6 +65,7 @@ async def query_course(course_name: str = Body(..., embed=True), get_skills: boo
                 skills_list = {skill.name: skill.is_selected for skill in skills}
                 return skills_list
             
+            course_name = course.course_name
             contents = course.contents
             objectives = course.objectives
             esco_query = contents + " " + objectives
@@ -82,7 +83,7 @@ async def query_course(course_name: str = Body(..., embed=True), get_skills: boo
 
             # Check if the request was successful
             if response.status_code != 200:
-                print(f"Error fetching data from API for {course_name}")
+                print(f"Error fetching data from API for {course_id} {course_name}")
             else:
                 data = response.json()["_embedded"]["results"]
                 skills = [match['preferredLabel'][ESCO_API_LANG] for match in data]
@@ -152,7 +153,7 @@ async def update_course_skills(update: SkillsUpdate, db: AsyncSession = Depends(
     try:
         # Start a transaction
         async with db.begin():
-            course_stmt = select(Course).where(Course.course_name == update.course_name)
+            course_stmt = select(Course).where(cast(Course.id, String) == update.course_id)
             course_result = await db.execute(course_stmt)
             course = course_result.scalar_one_or_none()
 

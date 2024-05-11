@@ -43,7 +43,7 @@ export const useChatLogic = () => {
   
   const [messages, setMessages] = useState([]);
   const [query, setQuery] = useState('');
-  const [latestQueriedCourse, setLatestQueriedCourse] = useState('');
+  const [latestQueriedCourse, setLatestQueriedCourse] = useState(''); // this will be the id and not the course name (because the latter is not unique)
   const [courses, setCourses] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -54,7 +54,7 @@ export const useChatLogic = () => {
 
   const apiUrl = process.env.REACT_APP_API_URL || 'http://web:8000'; // Fallback URL
 
-  const fetchSkills = async (courseName) => {
+  const fetchSkills = async (courseId) => {
       try {
         const response = await fetch(`${apiUrl}/query`, {
           method: 'POST',
@@ -62,7 +62,7 @@ export const useChatLogic = () => {
             'Content-Type': 'application/json',
             'Access-Control-Allow-Origin': '*'
           },
-          body: JSON.stringify({ course_name: courseName, get_skills: true }),
+          body: JSON.stringify({ course_id: courseId, get_skills: true }),
         });
     
         if (!response.ok) {
@@ -103,10 +103,10 @@ export const useChatLogic = () => {
       }
   };
 
-  const updateCourseSkills = async (courseName, selectedSkills) => {
+  const updateCourseSkills = async (courseId, selectedSkills) => {
     try {
       const payload = {
-        course_name: courseName,
+        course_id: courseId,
         skills: selectedSkills
       };
       const response = await fetch(`${apiUrl}/update-course-skills`, {
@@ -129,18 +129,23 @@ export const useChatLogic = () => {
 
   // UTILS FUNCTIONS
 
+  const getCourseId = (input) => { // This function keeps leading numbers (which is the course id, for example "12345 SOFTWARE ENGINEERING" -> "12345") 
+    const match = input.match(/^\d+/);
+    return match ? match[0] : '';
+  };
+
   const handleSend = async () => {
-    const courseName = query.replace(/^\d+\s*/, ''); // remove leading numbers "12345 SOFTWARE ENGINEERING" -> "SOFTWARE ENGINEERING"
-    if (!courseName.trim()) return;
+    const courseId = getCourseId(query);
+    if (!query.trim()) return;
     setIsLoading(true);
     setLatestMessageIndex(messages.length);
     setSelectedSkills({});
-    setLatestQueriedCourse(courseName);
+    setLatestQueriedCourse(courseId);
     setShowDropdown(false);
     setQuery('');
 
-    setMessages([...messages, { from: 'user', text: courseName }]);
-    const skillsResponse = await fetchSkills(courseName);
+    setMessages([...messages, { from: 'user', text: query }]);
+    const skillsResponse = await fetchSkills(getCourseId(query));
     setIsLoading(false);
 
     if (!skillsResponse) { // 404, queried course not stored in db or server error...
@@ -199,7 +204,7 @@ export const useChatLogic = () => {
         ...prev,
         [skillName]: true
     }));
-};
+  };
 
   // LOADING DOTS ANIMATION LOGIC
 
