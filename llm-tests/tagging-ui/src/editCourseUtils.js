@@ -6,7 +6,7 @@ export const useEditCourseLogic = () => {
     // STATES
 
     const [courseName, setCourseName] = useState('');
-    const [lastCourseName, setLastCourseName] = useState('');
+    const [lastCourseId, setLastCourseId] = useState('');
     const [objectives, setObjectives] = useState('');
     const [contents, setContents] = useState('');
     const [courses, setCourses] = useState([]);
@@ -42,7 +42,7 @@ export const useEditCourseLogic = () => {
         }
     };
 
-    const fetchCourseInfo = async (courseName) => {
+    const fetchCourseInfo = async (courseId) => {
       try {
         const response = await fetch(`${apiUrl}/query`, {
           method: 'POST',
@@ -50,7 +50,7 @@ export const useEditCourseLogic = () => {
             'Content-Type': 'application/json',
             'Access-Control-Allow-Origin': '*'
           },
-          body: JSON.stringify({ course_name: courseName, get_skills: false }),
+          body: JSON.stringify({ course_id: courseId, get_skills: false }),
         });
     
         if (!response.ok) {
@@ -65,7 +65,7 @@ export const useEditCourseLogic = () => {
       }
     };
 
-    const updateCourseInfo = async (courseName, contents, objectives) => {
+    const updateCourseInfo = async (courseId, contents, objectives) => {
       try {
         const response = await fetch(`${apiUrl}/update-course`, {
           method: 'PUT',
@@ -73,7 +73,7 @@ export const useEditCourseLogic = () => {
             'Content-Type': 'application/json',
             'Access-Control-Allow-Origin': '*'
           },
-          body: JSON.stringify({ course_name: courseName, contents: contents, objectives: objectives }),
+          body: JSON.stringify({ course_id: courseId, contents: contents, objectives: objectives }),
         });
     
         if (!response.ok) {
@@ -89,22 +89,28 @@ export const useEditCourseLogic = () => {
 
     // UTILS FUNCTIONS
 
+    const getCourseId = (input) => { // This function keeps leading numbers (which is the course id, for example "12345 SOFTWARE ENGINEERING" -> "12345") 
+      const match = input.match(/^\d+/);
+      return match ? match[0] : '';
+    };
+
     const handleDropdownSelect = (courseName) => {
       setCourseName(courseName);
-      setLastCourseName(courseName);
+      let courseId = getCourseId(courseName);
+      setLastCourseId(courseId);
       setShowDropdown(false);
-      fillCourseInfo(courseName);
+      fillCourseInfo(courseId);
     };
     
-    const fillCourseInfo = async(courseName) => {
-      const data = await fetchCourseInfo(courseName);
+    const fillCourseInfo = async(courseId) => {
+      const data = await fetchCourseInfo(courseId);
       setContents(data.contents);
       setObjectives(data.objectives);
     }
 
     const handleSave = async() => {
       try {
-        const response = await updateCourseInfo(lastCourseName, contents, objectives);    
+        const response = await updateCourseInfo(lastCourseId, contents, objectives);    
         if (response.ok) {
           toast.success('Course information updated successfully!', { position: "top-center", hideProgressBar: true });
         } else {
@@ -119,8 +125,8 @@ export const useEditCourseLogic = () => {
     return {
         courseName,
         setCourseName,
-        lastCourseName,
-        setLastCourseName,
+        lastCourseId,
+        setLastCourseId,
         contents,
         setContents,
         objectives,

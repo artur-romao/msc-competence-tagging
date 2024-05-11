@@ -117,7 +117,7 @@ const NavLink = styled(Link)`
 function EditCoursePage() {
 
   const {
-    courseName,
+        courseName,
         setCourseName,
         contents,
         setContents,
@@ -149,7 +149,6 @@ function EditCoursePage() {
                         setCourseName(e.target.value);
                         fetchCourses(e.target.value);
                     }}
-                    // You might want to integrate your dropdown selection logic here
                 />
                 {showDropdown && (
                     <DropdownContainer>
