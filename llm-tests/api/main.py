@@ -4,13 +4,14 @@ import pandas as pd
 import redis
 import requests
 from config import ESCO_API_ENDPOINT, ESCO_API_LANG, FLOWISE_MATCHER_API_URL, FLOWISE_SHORTER_API_URL, TAGGING_UI_URL
-from models import Course, Skill
+from models import Course, Skill, Base
 from database import get_db
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy import delete, or_, cast, String
 from typing import Annotated, List, Dict
 from pydantic import BaseModel, StringConstraints
+from database import sync_engine 
 
 class SkillsUpdate(BaseModel):
     course_id: Annotated[str, StringConstraints(strip_whitespace=True)]
@@ -20,6 +21,9 @@ class CourseUpdate(BaseModel):
     course_id: Annotated[str, StringConstraints(strip_whitespace=True)]
     contents: Annotated[str, StringConstraints(strip_whitespace=True)] 
     objectives: Annotated[str, StringConstraints(strip_whitespace=True)]
+
+# Create db tables
+Base.metadata.create_all(bind=sync_engine)
 
 app = FastAPI()
 
@@ -49,7 +53,7 @@ async def query_course(course_id: str = Body(..., embed=True), get_skills: bool 
                 raise HTTPException(status_code=404, detail="Course not found")
             
             if not get_skills: # If the point is not to get skills, return course contents and objectives 
-                return {"contents": course.contents, "objectives": course.objectives}
+                return {"url": course.url, "contents": course.contents, "objectives": course.objectives}
 
             if course_id == "42532": # DATABASES
                 return {"redis": True, "mongodb": True, "cassandra": True, "neo4j": True}
@@ -136,6 +140,7 @@ async def populate_postgres(db: AsyncSession = Depends(get_db)):
                 course = Course(
                     id = row['ID'],
                     course_name = row['Name'],
+                    url = row['Url'],
                     contents = row['Contents'],
                     objectives = row['Objectives'],
                 )

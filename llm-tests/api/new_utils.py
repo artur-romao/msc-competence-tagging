@@ -44,6 +44,7 @@ for index, row in df.iterrows():
     if course_id not in dpucs.keys():
         dpucs[course_id] = {}
     dpucs[course_id]['Name'] = row['Title']
+    dpucs[course_id]['Url'] = row['Url']
     dpucs[course_id]['Objectives'] = remove_html_tags(row['Objectivos'])
     dpucs[course_id]['Contents'] = remove_html_tags(row['Programa'])
 

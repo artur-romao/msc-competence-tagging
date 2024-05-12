@@ -11,6 +11,7 @@ class Course(Base):
     course_name = Column(String, index=True)
     objectives = Column(String)
     contents = Column(String)
+    url = Column(String)
     skills = relationship("Skill", back_populates="course", cascade="all, delete-orphan")
 
 class Skill(Base):
