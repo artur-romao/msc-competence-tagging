@@ -31,4 +31,4 @@ The ultimate goal of this dissertation is to provide the University of Aveiro's 
 
 ## System Architecture
 
-![image](./docs/architecture.png)
+![image](./docs/architecture_diagram.png)
