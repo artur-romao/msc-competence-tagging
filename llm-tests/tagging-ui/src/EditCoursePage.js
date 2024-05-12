@@ -119,6 +119,7 @@ function EditCoursePage() {
   const {
         courseName,
         setCourseName,
+        url,
         contents,
         setContents,
         objectives,
@@ -160,6 +161,7 @@ function EditCoursePage() {
                     </DropdownContainer>
                 )}
             </SearchArea>
+            <a href={url} target="_blank" rel="noopener noreferrer" style={{textDecoration: 'none', color: 'black', fontFamily: '"Open Sans", sans-serif'}}><b>{url}</b></a>
             <FieldHeader>Contents</FieldHeader>
             <LargeInput
                 value={contents}

@@ -8,6 +8,7 @@ export const useEditCourseLogic = () => {
     const [courseName, setCourseName] = useState('');
     const [lastCourseId, setLastCourseId] = useState('');
     const [objectives, setObjectives] = useState('');
+    const [url, setUrl] = useState('');
     const [contents, setContents] = useState('');
     const [courses, setCourses] = useState([]);
     const [showDropdown, setShowDropdown] = useState(false);
@@ -104,6 +105,7 @@ export const useEditCourseLogic = () => {
     
     const fillCourseInfo = async(courseId) => {
       const data = await fetchCourseInfo(courseId);
+      setUrl(data.url);
       setContents(data.contents);
       setObjectives(data.objectives);
     }
@@ -127,6 +129,8 @@ export const useEditCourseLogic = () => {
         setCourseName,
         lastCourseId,
         setLastCourseId,
+        url,
+        setUrl,
         contents,
         setContents,
         objectives,
