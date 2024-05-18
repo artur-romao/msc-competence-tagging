@@ -15,7 +15,7 @@ from database import sync_engine
 
 class SkillsUpdate(BaseModel):
     course_id: Annotated[str, StringConstraints(strip_whitespace=True)]
-    skills: Dict[str, bool]
+    skills: Dict[str, List[bool]]
 
 class CourseUpdate(BaseModel):
     course_id: Annotated[str, StringConstraints(strip_whitespace=True)]
@@ -56,25 +56,25 @@ async def query_course(course_id: str = Body(..., embed=True), get_skills: bool 
                 return {"url": course.url, "contents": course.contents, "objectives": course.objectives}
 
             if course_id == "42532": # DATABASES
-                return {"redis": True, "mongodb": True, "cassandra": True, "neo4j": True}
+                return {"redis": [True, False], "mongodb": [True, False], "cassandra": [True, False], "neo4j": [True, False]}
             if course_id == "40385": # ADVANCED DATABASES
-                return {"SQL": True, "NoSQL": True, "manage databases": True}
+                return {"SQL": [True, False], "NoSQL": [True, False], "manage databases": [True, False]}
             
-            skill_stmt = select(Skill.name, Skill.is_selected).join(Course).where(Course.id == course.id)
+            skill_stmt = select(Skill.name, Skill.is_selected, Skill.manually_added).join(Course).where(Course.id == course.id)
             skills_result = await session.execute(skill_stmt)
             skills = skills_result.fetchall()
 
             # Check if there are skills stored in db for that course and return them if so
             if skills:
-                skills_list = {skill.name: skill.is_selected for skill in skills}
+                skills_list = {skill.name: [skill.is_selected, skill.manually_added] for skill in skills}
                 return skills_list
             
             course_name = course.course_name
             contents = course.contents
             objectives = course.objectives
-            esco_query = contents + " " + objectives
+            esco_query = f"{course_name} {contents} {objectives}"
 
-            print(f"{course_name}: {esco_query}\n")
+            print(f"{esco_query}\n")
             loops = 0
             while len(esco_query) > 800:
                 payload = {"question": "SHORT_THIS: " + esco_query}
@@ -98,7 +98,7 @@ async def query_course(course_id: str = Body(..., embed=True), get_skills: bool 
                 print(FLOWISE_MATCHER_API_URL, payload)
                 response = requests.post(FLOWISE_MATCHER_API_URL, json=payload)
                 skills_list = response.json()["text"].split("\n")
-                skills_dict = {skill: True for skill in skills_list}
+                skills_dict = {skill: [True, False] for skill in skills_list} # is_selected True by default, manually_added False because it was determined by the system 
                 return skills_dict
 
     except HTTPException as e:
@@ -165,7 +165,9 @@ async def update_course_skills(update: SkillsUpdate, db: AsyncSession = Depends(
             if not course:
                 raise HTTPException(status_code=404, detail="Course not found")
 
-            for skill_name, is_selected in update.skills.items():
+            for skill_name, skill_values in update.skills.items():
+                is_selected, manually_added = skill_values
+                
                 skill_stmt = select(Skill).where(Skill.name == skill_name, Skill.course_id == course.id)
                 skill_result = await db.execute(skill_stmt)
                 skill = skill_result.scalar_one_or_none()
@@ -175,7 +177,7 @@ async def update_course_skills(update: SkillsUpdate, db: AsyncSession = Depends(
                     skill.is_selected = is_selected
                 else:
                     # Otherwise, create a new skill
-                    new_skill = Skill(name=skill_name, is_selected=is_selected, course_id=course.id)
+                    new_skill = Skill(name=skill_name, is_selected=is_selected, manually_added=manually_added, course_id=course.id)
                     db.add(new_skill)
 
             # Commit at the end of the loop

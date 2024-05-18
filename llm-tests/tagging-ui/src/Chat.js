@@ -169,15 +169,15 @@ function Chat() {
     };
     const skillsPart = from === 'system' && skills && (
       <>
-        {Object.entries(skills).map(([skillName, isSelected]) => (
+        {Object.entries(skills).map(([skillName, skillData]) => ( // skillData = [isSelected, manuallyAdded]
           <SkillItem key={skillName}>
             {isLatest && <Checkbox
-              checked={selectedSkills[skillName]}
+              checked={selectedSkills[skillName][0]} // Using the first boolean value (isSelected)
               onChange={(e) => onSkillChange(skillName, e.target.checked)}
               disabled={false}
             />}
             {!isLatest && <Checkbox
-              checked={isSelected}
+              checked={skillData[0]} // Using the first boolean value (isSelected)
               onChange={(e) => onSkillChange(skillName, e.target.checked)}
               disabled={true}
             />}

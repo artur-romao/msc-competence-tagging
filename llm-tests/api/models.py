@@ -20,5 +20,6 @@ class Skill(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, index=True)
     is_selected = Column(Boolean, default=True)
+    manually_added = Column(Boolean, default=False)
     course_id = Column(Integer, ForeignKey('courses.id', ondelete="CASCADE"))
     course = relationship("Course", back_populates="skills")

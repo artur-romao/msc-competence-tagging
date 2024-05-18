@@ -191,7 +191,8 @@ export const useChatLogic = () => {
 
   const handleSkillChange = (skillName, isSelected) => {
     setSelectedSkills(prevSkills => {
-      const updatedSkills = { ...prevSkills, [skillName]: isSelected };
+      const manuallyAdded = prevSkills[skillName][1];
+      const updatedSkills = { ...prevSkills, [skillName]: [isSelected, manuallyAdded] };
       console.log(updatedSkills);
       let messageIndex = latestMessageIndex + 1;
       updateMessageSkills(messageIndex, updatedSkills);
@@ -202,7 +203,7 @@ export const useChatLogic = () => {
   const addSkillToLatestMessage = (skillName) => {
     setSelectedSkills(prev => ({
         ...prev,
-        [skillName]: true
+        [skillName]: [true, true]
     }));
   };
 
