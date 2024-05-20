@@ -45,13 +45,12 @@ export const useEditCourseLogic = () => {
 
     const fetchCourseInfo = async (courseId) => {
       try {
-        const response = await fetch(`${apiUrl}/query`, {
-          method: 'POST',
+        const response = await fetch(`${apiUrl}/course-data?course_id=${encodeURIComponent(courseId)}`, {
+          method: 'GET',
           headers: {
             'Content-Type': 'application/json',
             'Access-Control-Allow-Origin': '*'
           },
-          body: JSON.stringify({ course_id: courseId, get_skills: false }),
         });
     
         if (!response.ok) {

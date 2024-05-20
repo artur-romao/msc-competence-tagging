@@ -62,7 +62,7 @@ export const useChatLogic = () => {
             'Content-Type': 'application/json',
             'Access-Control-Allow-Origin': '*'
           },
-          body: JSON.stringify({ course_id: courseId, get_skills: true }),
+          body: JSON.stringify({ course_id: courseId }),
         });
     
         if (!response.ok) {

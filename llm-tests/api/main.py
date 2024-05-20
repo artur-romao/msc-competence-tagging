@@ -42,7 +42,7 @@ def read_root():
     return {"Hello": "World"}
 
 @app.post("/query")
-async def query_course(course_id: str = Body(..., embed=True), get_skills: bool = Body(..., embed=False), db: AsyncSession = Depends(get_db)):
+async def query_course(course_id: str = Body(..., embed=True), db: AsyncSession = Depends(get_db)):
     try:
         async with db as session:
             stmt = select(Course).where(cast(Course.id, String) == course_id)
@@ -51,9 +51,6 @@ async def query_course(course_id: str = Body(..., embed=True), get_skills: bool 
 
             if not course:
                 raise HTTPException(status_code=404, detail="Course not found")
-            
-            if not get_skills: # If the point is not to get skills, return course contents and objectives 
-                return {"url": course.url, "contents": course.contents, "objectives": course.objectives}
 
             if course_id == "42532": # DATABASES
                 return {"redis": [True, False], "mongodb": [True, False], "cassandra": [True, False], "neo4j": [True, False]}
@@ -206,6 +203,24 @@ async def search_courses(query: str, db: AsyncSession = Depends(get_db)):
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
     
+@app.get('/course-data')
+async def get_course_data(course_id: str, db: AsyncSession = Depends(get_db)):
+    try:
+        async with db as session:
+            stmt = select(Course).where(cast(Course.id, String) == course_id)
+            result = await session.execute(stmt)
+            course = result.scalar_one_or_none()
+
+            if not course:
+                raise HTTPException(status_code=404, detail="Course not found")
+            else:
+                return {"url": course.url, "contents": course.contents, "objectives": course.objectives}
+   
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.put('/update-course')
 async def update_course(update: CourseUpdate, db: AsyncSession = Depends(get_db)):
     try:
