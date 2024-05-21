@@ -43,7 +43,7 @@ export const useChatLogic = () => {
   
   const [messages, setMessages] = useState([]);
   const [query, setQuery] = useState('');
-  const [latestQueriedCourse, setLatestQueriedCourse] = useState(''); // this will be the id and not the course name (because the latter is not unique)
+  const [latestQueriedCourse, setLatestQueriedCourse] = useState(''); // this will be the id + the course name (ex.: 42532 DATABASES)
   const [courses, setCourses] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -140,12 +140,12 @@ export const useChatLogic = () => {
     setIsLoading(true);
     setLatestMessageIndex(messages.length);
     setSelectedSkills({});
-    setLatestQueriedCourse(courseId);
+    setLatestQueriedCourse(query);
     setShowDropdown(false);
     setQuery('');
 
     setMessages([...messages, { from: 'user', text: query }]);
-    const skillsResponse = await fetchSkills(getCourseId(query));
+    const skillsResponse = await fetchSkills(courseId);
     setIsLoading(false);
 
     if (!skillsResponse) { // 404, queried course not stored in db or server error...
@@ -168,7 +168,8 @@ export const useChatLogic = () => {
 
   const handleSaveSkills = async () => {
     try {
-      const updateResponse = await updateCourseSkills(latestQueriedCourse, selectedSkills);
+      let latestQueriedCourseId = getCourseId(latestQueriedCourse);
+      const updateResponse = await updateCourseSkills(latestQueriedCourseId, selectedSkills);
       console.log(updateResponse);
       if (updateResponse.ok) {
         toast.success(`Skills for course "${latestQueriedCourse}" updated successfully!`, { position: "top-center", hideProgressBar: true });
